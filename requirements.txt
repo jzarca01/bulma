@@ -1,0 +1,13 @@
+annotated-doc==0.0.4
+attrs==26.1.0
+click==8.3.2
+markdown-it-py==4.0.0
+mdurl==0.1.2
+numpy==2.2.6
+pillow==12.2.0
+psd-tools==1.14.3
+Pygments==2.20.0
+rich==14.3.3
+shellingham==1.5.4
+typer==0.24.1
+typing_extensions==4.15.0
