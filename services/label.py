@@ -7,60 +7,22 @@ from typing import Any
 
 
 class Label:
-    """
-    Génère un fichier JSON représentant un label.
-
-    La structure produite contient :
-        - un Stage (avec width / height)
-        - un Layer
-          - une Image de fond (base64, width, height)
-          - N éléments Text (text, fontSize, fontFamily, fill, …)
-          - un Rect optionnel (composant QrCode, etc.)
-
-    Utilisation :
-        label = Label(width=1153, height=1600)
-
-        # Image de fond
-        label.add_background("data:image/png;base64,iVBOR…")
-
-        # Ajouter des textes
-        label.add_text("{{country}}", y=60, font_size=40)
-        label.add_text("{{region}}",  y=77, font_size=40)
-
-        # Modifier globalement la police / couleur de tous les textes
-        label.set_font("Arial", size=36, fill="red")
-
-        # Ajouter un QrCode
-        label.add_qrcode(x=190, y=285, width=90, height=90)
-
-        # Exporter
-        label.save("output.json")
-
-        # Charger un fichier existant
-        label = Label.from_file("template.json")
-    """
-
-    # ------------------------------------------------------------------ #
-    #  Construction                                                       #
-    # ------------------------------------------------------------------ #
-
     def __init__(
         self,
         width: int,
         height: int,
-        base64: str,
-        font_family: str = "Trebuchet MS",
-        font_size: int = 40,
         fill: str = "black",
     ):
         self._width = width
         self._height = height
-        self._base64 = base64
-        self._font_family = font_family
-        self._font_size = font_size
         self._fill = fill
+        self._font_size = 40
+        self._font_family = "Trebuchet MS"
         self._texts: list[dict[str, Any]] = []
+        self._images: list[dict[str, Any]] = []
         self._components: list[dict[str, Any]] = []
+        self.valid_components = ['background', 'country', 'region', 'beanName', 'process', 'variety', 'flavors', 'date']
+
 
     def __repr__(self) -> str:
         return (
@@ -80,7 +42,30 @@ class Label:
         self._height = value
 
     def add_background(self, base64: str) -> None:
-        self._base64 = base64
+        self._base64 = f"data:image/png;base64,{base64}"
+
+    def add_image(
+        self,
+        width: int,
+        height: int,
+        base64: str,
+        y: int = 0,
+        x: int | None = None,
+        **extra_attrs: Any,
+    ) -> None:
+        attrs: dict[str, Any] = {
+            "x": x,
+            "y": y,
+            "width": width,
+            "height": height,
+            "base64": f"data:image/png;base64,{base64}",
+            "scaleX": 1,
+            "scaleY": 1,
+        }
+        if x is not None:
+            attrs["x"] = x
+        attrs.update(extra_attrs)
+        self._images.append(attrs)
 
     def add_text(
         self,
@@ -88,7 +73,7 @@ class Label:
         width: int,
         y: int = 0,
         x: int | None = None,
-        font_size: int | None = None,
+        font_size: float | None = None,
         font_family: str | None = None,
         fill: str | None = None,
         **extra_attrs: Any,
@@ -97,7 +82,7 @@ class Label:
             "y": y,
             "width": width,
             "text": text,
-            "fontSize": font_size or self._font_size,
+            "fontSize": str(font_size or self._font_size),
             "fontFamily": font_family or self._font_family,
             "fill": fill or self._fill,
         }
@@ -128,10 +113,6 @@ class Label:
             "className": "Rect",
         })
 
-    # ------------------------------------------------------------------ #
-    #  Export                                                              #
-    # ------------------------------------------------------------------ #
-
     def to_dict(self) -> dict[str, Any]:
         children: list[dict[str, Any]] = []
 
@@ -153,7 +134,9 @@ class Label:
         for t in self._texts:
             children.append({"attrs": dict(t), "className": "Text"})
 
-        # Composants (QrCode, …)
+        for t in self._images:
+            children.append({"attrs": dict(t), "className": "Image"})
+
         children.extend(deepcopy(self._components))
 
         return {
@@ -167,9 +150,6 @@ class Label:
                 }
             ],
         }
-
-    def to_json(self, indent: int = 2) -> str:
-        return json.dumps(self.to_dict(), indent=indent, ensure_ascii=False)
 
     def save(self, path: str | Path) -> None:
         with open(path, "w", encoding="utf-8") as f:
