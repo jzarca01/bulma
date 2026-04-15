@@ -1,3 +1,10 @@
+# Bulma (Bullet Label Maker)
+
+## Install dependencies
+```pip install -r requirements.txt```
+
+## How to use
+
 In Photoshop, your psd file can use the following layer names:
 
 - background
@@ -11,5 +18,4 @@ In Photoshop, your psd file can use the following layer names:
 
 Then running the following command
 
-```python main.py your_label.psd``` generates your_label.json that you can import in Roast Time
-
+```python main.py your_label.psd``` generates your_label.json that can be imported in Roast Time
