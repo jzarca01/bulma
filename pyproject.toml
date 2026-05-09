@@ -1,0 +1,10 @@
+[project]
+name = "bulma"
+version = "0.1.0"
+description = "Bullet Label Maker"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "psd-tools>=1.16.0",
+    "typer>=0.25.1",
+]
