@@ -78,7 +78,16 @@ def generate(file_path: str):
                 )
     label.save(f'{os.path.basename(file_path)}.json')
 
+@app.command()
+def crop_front_label(file_path:str):
+    if file_path.lower().endswith('.psd') is False:
+        raise Exception("This program only supports PSD files")
+    
+    psd.process_psd(file_path)
+    png_image = psd.export_to_png(file_path)
 
+    (label_width, label_height) = get_label_size(psd.get_layers())
+    psd.crop_png(file_path=png_image, left=0, top = (label_height/2) -80, right = label_width, bottom=label_height)
 
 if __name__ == "__main__":
     app()

@@ -1,5 +1,8 @@
+from pathlib import Path
+
 from psd_tools import PSDImage
 from psd_tools.api.layers import TypeLayer
+from PIL import Image
 
 class PSDService:
     def __init__(self):
@@ -52,3 +55,14 @@ class PSDService:
 
         except (KeyError, IndexError, TypeError):
             return None, None, None
+        
+    def export_to_png(self, file_path):
+        merged_image = self.psd.topil()
+        output_path = str(Path(file_path + '.png').resolve())
+        merged_image.save(output_path)
+        return output_path
+
+    def crop_png(self, file_path, left, top, right, bottom):
+        original = Image.open(file_path)
+        cropped_example = original.crop((left, top, right, bottom))
+        cropped_example.save(file_path)
